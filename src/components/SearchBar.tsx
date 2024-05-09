@@ -5,6 +5,7 @@ import { Form, FormField, FormItem, FormControl } from "./ui/form";
 import { Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   searchQuery: z.string({
@@ -15,15 +16,23 @@ const formSchema = z.object({
 export type SearchForm = z.infer<typeof formSchema>;
 
 type Props = {
+  searchQuery: string;
   onSubmit: (formData: SearchForm) => void;
   onReset?: () => void;
   placeHolder: string;
 };
 
-const SearchBar = ({ onSubmit, onReset, placeHolder }: Props) => {
+const SearchBar = ({ searchQuery, onSubmit, onReset, placeHolder }: Props) => {
   const form = useForm<SearchForm>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      searchQuery,
+    },
   });
+
+  useEffect(() => {
+    form.reset({ searchQuery });
+  }, [form, searchQuery]);
 
   const handleReset = () => {
     form.reset({
@@ -39,7 +48,7 @@ const SearchBar = ({ onSubmit, onReset, placeHolder }: Props) => {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={`flex flex-row flex-1 items-center justify-between gap-3 border-2 rounded-full p-3 mx-5 ${
+        className={`flex flex-row flex-1 items-center justify-between gap-3 border-2 rounded-full p-3 ${
           form.formState.errors.searchQuery && "border-red-500"
         }`}
       >
@@ -63,16 +72,14 @@ const SearchBar = ({ onSubmit, onReset, placeHolder }: Props) => {
             </FormItem>
           )}
         />
-        {form.formState.isDirty && (
-          <Button
-            onClick={handleReset}
-            type="button"
-            variant="outline"
-            className="rounded-full"
-          >
-            Clear
-          </Button>
-        )}
+        <Button
+          onClick={handleReset}
+          type="button"
+          variant="outline"
+          className="rounded-full"
+        >
+          Reset
+        </Button>
         <Button type="submit" className="rounded-full bg-orange-500">
           Search
         </Button>
